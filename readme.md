@@ -6,6 +6,7 @@ Clone the repository in the Blender addons directory for your system.
 Turn on the add-on in Blender user preferences.
 
 ## Planned Features:
+- All transforms should have the option to remain exported as Blender coordinate-space, or converted to RHS with Y up.
 - Exporting of `objects` including
   - world `transform` (4x4 row or column based matrix)
   - world `position` (1x3 vector)
