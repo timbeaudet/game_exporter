@@ -4,6 +4,11 @@ bl_info = {
 	"category": "Import-Export"
 }
 
+if "bpy" in locals():
+	import imp
+	if "game_exporter" in locals():
+		imp.reload(game_exporter)
+
 import bpy
 from bpy_extras.io_utils import ExportHelper
 
@@ -13,7 +18,9 @@ class GameExporter(bpy.types.Operator, ExportHelper):
 	filename_ext = ".game.json"
 
 	def execute(self, context):
-		return {"FINISHED"}
+		from . import game_exporter
+		keywords = self.as_keywords(ignore=("check_existing",))
+		return game_exporter.save(context, **keywords)
 
 def add_export_menu_item(self, context):
 	self.layout.operator(
