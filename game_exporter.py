@@ -16,6 +16,8 @@ def save(context,
 		filepath,
 		):
 
+	from mathutils import Quaternion
+
 	scene = context.scene
 	world = context.scene.world
 
@@ -37,7 +39,18 @@ def save(context,
 			"position": serialize_vector3(o.matrix_world.to_translation()),
 			"properties": {k:v for k,v in o.items()[1:]},
 		}
-		list_to_add_to = "trigger_areas" if o.empty_draw_type in ["SPHERE","CUBE"] else "objects"
+
+		if o.empty_draw_type in ["SPHERE","CUBE"]:
+			list_to_add_to = "trigger_areas"
+
+			if "CUBE" == o.empty_draw_type:
+				has_rotation = Quaternion((1, 0, 0, 0)) != o.matrix_world.to_quaternion()
+
+				objdata["type"] = "OOBB" if has_rotation else "AABB"
+
+		else:
+			list_to_add_to = "objects"
+
 		json_out[list_to_add_to].append(objdata)
 
 	for o in objects_curve:
