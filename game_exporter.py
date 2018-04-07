@@ -19,7 +19,7 @@ def save(context,
 	scene = context.scene
 	world = context.scene.world
 
-	objects = [obj for obj in scene.objects if obj.is_visible(scene)]
+	objects = [obj for obj in scene.objects if obj.is_visible(scene) and "EMPTY" == obj.type]
 
 	json_out = {
 		"objects": [],
@@ -28,16 +28,11 @@ def save(context,
 	for o in objects:
 		objdata = {
 			"name": o.name,
-			"type": o.type,
+			"type": o.empty_draw_type,
+			"size": o.empty_draw_size,
 			"transform": serialize_matrix4(o.matrix_world),
 			"position": serialize_vector3(o.matrix_world.to_translation()),
 		}
-
-		if "EMPTY" == o.type:
-			objdata.update({
-				"empty_type": o.empty_draw_type,
-				"empty_size": o.empty_draw_size,
-			})
 
 		json_out["objects"].append(objdata)
 
