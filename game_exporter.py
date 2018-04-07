@@ -25,6 +25,7 @@ def save(context,
 	json_out = {
 		"objects": [],
 		"paths": [],
+		"trigger_areas": [],
 	}
 
 	for o in objects_empty:
@@ -36,8 +37,8 @@ def save(context,
 			"position": serialize_vector3(o.matrix_world.to_translation()),
 			"properties": {k:v for k,v in o.items()[1:]},
 		}
-
-		json_out["objects"].append(objdata)
+		list_to_add_to = "trigger_areas" if o.empty_draw_type in ["SPHERE","CUBE"] else "objects"
+		json_out[list_to_add_to].append(objdata)
 
 	for o in objects_curve:
 		curve_type = o.data.splines.active.type
