@@ -32,6 +32,7 @@ def save(context,
 			"size": o.empty_draw_size,
 			"transform": serialize_matrix4(o.matrix_world),
 			"position": serialize_vector3(o.matrix_world.to_translation()),
+			"properties": {k:v for k,v in o.items()[1:]},
 		}
 
 		json_out["objects"].append(objdata)
