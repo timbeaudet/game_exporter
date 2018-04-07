@@ -42,6 +42,6 @@ def save(context,
 		json_out["objects"].append(objdata)
 
 	with open(filepath, "w", encoding="utf-8") as file:
-		file.write(json.dumps(json_out))
+		file.write(json.dumps(json_out, sort_keys=True, indent=4, separators=(',', ': ')))
 
 	return {"FINISHED"}
