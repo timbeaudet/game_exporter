@@ -39,26 +39,35 @@ def save(context,
 		"trigger_areas": [],
 	}
 
-	for o in objects_empty:
-		obj_size = o.empty_draw_size
-		obj_scale = o.matrix_world.to_scale()
+	bpy.ops.object.select_all(action='DESELECT')
+	for obj_orig in objects_empty:
+		obj = obj_orig.copy()
+		if obj_orig.data: obj.data = obj_orig.data.copy()
+		scene.objects.link(obj)
+		obj.select = True
+		scene.objects.active = obj
+
+		obj_size = obj.empty_draw_size
+		obj_scale = obj.matrix_world.to_scale()
+		bpy.ops.object.transform_apply(scale=True, location=False, rotation=False)
 
 		size_vector = obj_size * obj_scale
 
 		objdata = {
-			"name": o.name,
-			"type": o.empty_draw_type,
-			"transform": serialize_matrix4(o.matrix_world),
-			"position": serialize_vector3(o.matrix_world.to_translation()),
+			"name": obj.name,
+			"type": obj.empty_draw_type,
+			"transform_without_scale": serialize_matrix4(obj.matrix_world),
+			"transform": serialize_matrix4(obj_orig.matrix_world),
+			"position": serialize_vector3(obj.matrix_world.to_translation()),
 			"size": serialize_vector3(size_vector),
-			"properties": {k:v for k,v in o.items()[1:]},
+			"properties": {k:v for k,v in obj.items()[1:]},
 		}
 
-		if o.empty_draw_type in ["SPHERE","CUBE"]:
+		if obj.empty_draw_type in ["SPHERE","CUBE"]:
 			list_to_add_to = "trigger_areas"
 
-			if "CUBE" == o.empty_draw_type:
-				has_rotation = Quaternion((1, 0, 0, 0)) != o.matrix_world.to_quaternion()
+			if "CUBE" == obj.empty_draw_type:
+				has_rotation = Quaternion((1, 0, 0, 0)) != obj.matrix_world.to_quaternion()
 
 				objdata["type"] = "OOBB" if has_rotation else "AABB"
 
@@ -66,6 +75,7 @@ def save(context,
 			list_to_add_to = "objects"
 
 		json_out[list_to_add_to].append(objdata)
+		bpy.ops.object.delete()
 
 	for o in objects_curve:
 		curve_type = o.data.splines.active.type
