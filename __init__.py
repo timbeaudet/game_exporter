@@ -11,7 +11,7 @@ if "bpy" in locals():
 
 import bpy
 from bpy.props import EnumProperty
-from bpy_extras.io_utils import ExportHelper
+from bpy_extras.io_utils import ExportHelper, axis_conversion
 
 class GameExporter(bpy.types.Operator, ExportHelper):
 	bl_idname = "export_game.json"
@@ -28,11 +28,35 @@ class GameExporter(bpy.types.Operator, ExportHelper):
 		default="column",
 	)
 
+	def axes(axis):
+		return [
+			("X", "X {}".format(axis), "X {}".format(axis)),
+			("-X", "-X {}".format(axis), "-X {}".format(axis)),
+			("Y", "Y {}".format(axis), "Y {}".format(axis)),
+			("-Y", "-Y {}".format(axis), "-Y {}".format(axis)),
+			("Z", "Z {}".format(axis), "Z {}".format(axis)),
+			("-Z", "-Z {}".format(axis), "-Z {}".format(axis)),
+		]
+
+	forward_axis = EnumProperty(
+		items=axes("Forward"),
+		name="Forward Vector",
+		description="The forward vector of your desired coordinate space",
+		default="-Z",
+	)
+	up_axis = EnumProperty(
+		items=axes("Up"),
+		name="Up Vector",
+		description="The up vector of your desired coordinate space",
+		default="Y",
+	)
+
 	def execute(self, context):
 		from . import game_exporter
-		keywords = self.as_keywords(ignore=("check_existing", "matrix_order"))
+		keywords = self.as_keywords(ignore=("check_existing", "matrix_order", "forward_axis", "up_axis"))
 		keywords.update({
 			"matrices_as_column_major": "column" == self.matrix_order,
+			"global_matrix": axis_conversion(to_up=self.up_axis, to_forward=self.forward_axis).to_4x4()
 		})
 		return game_exporter.save(context, **keywords)
 

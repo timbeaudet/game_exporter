@@ -19,6 +19,7 @@ def serialize_matrix4(matrix):
 def save(context,
 		filepath,
 		matrices_as_column_major=True,
+		global_matrix=None,
 		):
 
 	global serialise_matrices_as_column_major
@@ -50,18 +51,21 @@ def save(context,
 		obj.select = True
 		scene.objects.active = obj
 
+		obj_matrix_orig = global_matrix * obj_orig.matrix_world
+
 		obj_size = obj.empty_draw_size
-		obj_scale = obj.matrix_world.to_scale()
+		obj_scale = obj_matrix_orig.to_scale()
 		bpy.ops.object.transform_apply(scale=True, location=False, rotation=False)
 
+		obj_matrix = global_matrix * obj.matrix_world
 		size_vector = obj_size * obj_scale
 
 		objdata = {
 			"name": obj.name,
 			"type": obj.empty_draw_type,
-			"transform_without_scale": serialize_matrix4(obj.matrix_world),
-			"transform": serialize_matrix4(obj_orig.matrix_world),
-			"position": serialize_vector3(obj.matrix_world.to_translation()),
+			"transform_without_scale": serialize_matrix4(obj_matrix),
+			"transform": serialize_matrix4(obj_matrix_orig),
+			"position": serialize_vector3(obj_matrix.to_translation()),
 			"size": serialize_vector3(size_vector),
 			"properties": {k:v for k,v in obj.items()[1:]},
 		}
@@ -70,7 +74,7 @@ def save(context,
 			list_to_add_to = "trigger_areas"
 
 			if "CUBE" == obj.empty_draw_type:
-				has_rotation = Quaternion((1, 0, 0, 0)) != obj.matrix_world.to_quaternion()
+				has_rotation = Quaternion((1, 0, 0, 0)) != obj_matrix.to_quaternion()
 
 				objdata["type"] = "OOBB" if has_rotation else "AABB"
 
@@ -87,13 +91,13 @@ def save(context,
 		if "BEZIER" == curve_type:
 			for _, point in o.data.splines.active.bezier_points.items():
 				points.append({
-					"position": serialize_vector3(point.co),
-					"handle_left": serialize_vector3(point.handle_left),
-					"handle_right": serialize_vector3(point.handle_right),
+					"position": serialize_vector3(global_matrix * point.co),
+					"handle_left": serialize_vector3(global_matrix * point.handle_left),
+					"handle_right": serialize_vector3(global_matrix * point.handle_right),
 				})
 		else:
 			for _, point in o.data.splines.active.points.items():
-				points.append({"position": serialize_vector3(point.co)})
+				points.append({"position": serialize_vector3(global_matrix * point.co)})
 
 		objdata = {
 			"name": o.name,
