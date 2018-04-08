@@ -29,6 +29,9 @@ def save(context,
 	scene = context.scene
 	world = context.scene.world
 
+	initial_selected_objects = context.selected_objects
+	initial_active_object = scene.objects.active
+
 	objects_empty = [obj for obj in scene.objects if obj.is_visible(scene) and "EMPTY" == obj.type]
 	objects_curve = [obj for obj in scene.objects if obj.is_visible(scene) and "CURVE" == obj.type]
 
@@ -103,5 +106,9 @@ def save(context,
 
 	with open(filepath, "w", encoding="utf-8") as file:
 		file.write(json.dumps(json_out, sort_keys=True, indent=4, separators=(',', ': ')))
+
+	for obj in initial_selected_objects:
+		obj.select = True
+	scene.objects.active = initial_active_object
 
 	return {"FINISHED"}
