@@ -40,12 +40,17 @@ def save(context,
 	}
 
 	for o in objects_empty:
+		obj_size = o.empty_draw_size
+		obj_scale = o.matrix_world.to_scale()
+
+		size_vector = obj_size * obj_scale
+
 		objdata = {
 			"name": o.name,
 			"type": o.empty_draw_type,
-			"size": o.empty_draw_size,
 			"transform": serialize_matrix4(o.matrix_world),
 			"position": serialize_vector3(o.matrix_world.to_translation()),
+			"size": serialize_vector3(size_vector),
 			"properties": {k:v for k,v in o.items()[1:]},
 		}
 
