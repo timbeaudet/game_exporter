@@ -10,6 +10,7 @@ if "bpy" in locals():
 		imp.reload(game_exporter)
 
 import bpy
+from bpy.props import EnumProperty
 from bpy_extras.io_utils import ExportHelper
 
 class GameExporter(bpy.types.Operator, ExportHelper):
@@ -17,9 +18,22 @@ class GameExporter(bpy.types.Operator, ExportHelper):
 	bl_label = "Export Game Data"
 	filename_ext = ".game.json"
 
+	matrix_order = EnumProperty(
+		items=[
+			("column", "Column Major", "Column Major"),
+			("row", "Row Major", "Row Major"),
+		],
+		name="Matrix Order",
+		description="The order matrices will be exported as",
+		default="column",
+	)
+
 	def execute(self, context):
 		from . import game_exporter
-		keywords = self.as_keywords(ignore=("check_existing",))
+		keywords = self.as_keywords(ignore=("check_existing", "matrix_order"))
+		keywords.update({
+			"matrices_as_column_major": "column" == self.matrix_order,
+		})
 		return game_exporter.save(context, **keywords)
 
 def add_export_menu_item(self, context):

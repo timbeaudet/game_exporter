@@ -1,20 +1,28 @@
 import bpy
 import json
 
+serialise_matrices_as_column_major = None
+
 def serialize_vector3(vector):
 	return (vector[0], vector[1], vector[2])
 
 def serialize_matrix4(matrix):
+	mtrx_data = getattr(matrix, "col" if serialise_matrices_as_column_major else "row")
+
 	return (
-		matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
-		matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
-		matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
-		matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3],
+		mtrx_data[0][0], mtrx_data[0][1], mtrx_data[0][2], mtrx_data[0][3],
+		mtrx_data[1][0], mtrx_data[1][1], mtrx_data[1][2], mtrx_data[1][3],
+		mtrx_data[2][0], mtrx_data[2][1], mtrx_data[2][2], mtrx_data[2][3],
+		mtrx_data[3][0], mtrx_data[3][1], mtrx_data[3][2], mtrx_data[3][3],
 	)
 
 def save(context,
 		filepath,
+		matrices_as_column_major=True,
 		):
+
+	global serialise_matrices_as_column_major
+	serialise_matrices_as_column_major = matrices_as_column_major
 
 	from mathutils import Quaternion
 
@@ -25,6 +33,7 @@ def save(context,
 	objects_curve = [obj for obj in scene.objects if obj.is_visible(scene) and "CURVE" == obj.type]
 
 	json_out = {
+		"matrices_as_column_major": matrices_as_column_major,
 		"objects": [],
 		"paths": [],
 		"trigger_areas": [],
