@@ -16,7 +16,7 @@ from bpy_extras.io_utils import ExportHelper, axis_conversion
 class GameExporter(bpy.types.Operator, ExportHelper):
 	bl_idname = "export_game.json"
 	bl_label = "Export Game Data"
-	filename_ext = ".game.json"
+	filename_ext = ".gmon"
 
 	matrix_order = EnumProperty(
 		items=[
