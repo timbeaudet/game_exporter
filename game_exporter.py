@@ -44,36 +44,37 @@ def save(context,
 	}
 
 	bpy.ops.object.select_all(action='DESELECT')
-	for obj_orig in objects_empty:
-		obj = obj_orig.copy()
-		if obj_orig.data: obj.data = obj_orig.data.copy()
-		scene.objects.link(obj)
-		obj.select = True
-		scene.objects.active = obj
+	for original_object in objects_empty:
+		copied_object = original_object.copy()
+		if original_object.data:
+			copied_object.data = original_object.data.copy()
+		scene.objects.link(copied_object)
+		copied_object.select = True
+		scene.objects.active = copied_object
 
-		obj_matrix_orig = global_matrix * obj_orig.matrix_world
+		obj_matrix_orig = global_matrix * original_object.matrix_world
 
-		obj_size = obj.empty_draw_size
+		obj_size = copied_object.empty_draw_size
 		obj_scale = obj_matrix_orig.to_scale()
 		bpy.ops.object.transform_apply(scale=True, location=False, rotation=False)
 
-		obj_matrix = global_matrix * obj.matrix_world
+		obj_matrix = global_matrix * copied_object.matrix_world
 		size_vector = obj_size * obj_scale
 
 		objdata = {
-			"name": obj.name,
-			"type": obj.empty_draw_type,
+			"name": original_object.name,
+			"type": copied_object.empty_draw_type,
 			"transform_without_scale": serialize_matrix4(obj_matrix),
 			"transform": serialize_matrix4(obj_matrix_orig),
 			"position": serialize_vector3(obj_matrix.to_translation()),
 			"size": serialize_vector3(size_vector),
-			"properties": {k:v for k,v in obj.items()[1:]},
+			"properties": {k:v for k,v in original_object.items()[1:]},
 		}
 
-		if obj.empty_draw_type in ["SPHERE","CUBE"]:
+		if copied_object.empty_draw_type in ["SPHERE","CUBE"]:
 			list_to_add_to = "trigger_areas"
 
-			if "CUBE" == obj.empty_draw_type:
+			if "CUBE" == copied_object.empty_draw_type:
 				has_rotation = Quaternion((1, 0, 0, 0)) != obj_matrix.to_quaternion()
 
 				objdata["type"] = "OOBB" if has_rotation else "AABB"
